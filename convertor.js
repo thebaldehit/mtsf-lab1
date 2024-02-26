@@ -2,7 +2,7 @@
 
 const regExpes = [
   {
-    regExp: /```.*```/s,
+    regExp: /```.+?```/s,
     lengthS: 3,
     lengthE: 3,
     changeToStart: '<pre>',
@@ -11,7 +11,7 @@ const regExpes = [
     fn: (data) => data.split(' ').map(word => '~!~' + word).join(' ')
   },
   {
-    regExp: / \*\*.*?\*\*/,
+    regExp: / \*\*.+?\*\*/,
     lengthS: 3,
     lengthE: 2,
     changeToStart: ' <b>',
@@ -19,7 +19,15 @@ const regExpes = [
     nestedTag: false
   },
   {
-    regExp: / _.*?_/,
+    regExp: /^\*\*.+?\*\*/m,
+    lengthS: 2,
+    lengthE: 2,
+    changeToStart: '<b>',
+    changeToEnd: '</b>',
+    nestedTag: false
+  },
+  {
+    regExp: / _.+?_/,
     lengthS: 2,
     lengthE: 1,
     changeToStart: ' <i>',
@@ -27,13 +35,35 @@ const regExpes = [
     nestedTag: false
   },
   {
-    regExp: / `.*?`/,
+    regExp: /^_.+?_/m,
+    lengthS: 1,
+    lengthE: 1,
+    changeToStart: '<i>',
+    changeToEnd: '</i>',
+    nestedTag: false
+  },
+  {
+    regExp: / `.+?`/,
     lengthS: 2,
     lengthE: 1,
     changeToStart: ' <tt>',
     changeToEnd: '</tt>',
     nestedTag: false
+  },
+  {
+    regExp: /^`.+?`/m,
+    lengthS: 1,
+    lengthE: 1,
+    changeToStart: '<tt>',
+    changeToEnd: '</tt>',
+    nestedTag: false
   }
+];
+
+const regExpesError = [
+  /(^|\s)\*\*\w+/,
+  /(^|\s)_.+/,
+  /(^|\s)`.+/
 ];
 
 const addParagrapgs = (data) => {
@@ -53,10 +83,16 @@ const isNestedTag = (data) => {
   return false;
 }
 
+const isInvalidTags = (data) => {
+  for (const regExp of regExpesError) {
+    if (data.match(regExp) != null) return true;
+  }
+  return false;
+};
+
 const deleteInternalSymbols = (data, symbols) => data.split(' ').map(word => word.replace(symbols, '')).join(' ');
 
 const convert = (data) => {
-  data = addParagrapgs(data);
   for (const regExp of regExpes) {
     let match;
     while ((match = data.match(regExp.regExp)) != null) {
@@ -72,8 +108,14 @@ const convert = (data) => {
       data = data.slice(0, midx) + regExp.changeToStart + formatedData + regExp.changeToEnd + data.slice(midx + mlength); 
     }
   }
+  if (isInvalidTags(data)) {
+    const err = new Error('Error: invalid markdown not finished tags');
+    err.code = 406;
+    throw err;
+  }
   data = deleteInternalSymbols(data, '~!~');
-  console.log(data); // console
+  data = addParagrapgs(data);
+  return data;
 };
 
 module.exports = { convert };
