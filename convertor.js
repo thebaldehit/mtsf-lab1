@@ -118,4 +118,6 @@ const convert = (data) => {
   return data;
 };
 
+const forUnlessCommit = () => {};
+
 module.exports = { convert };
