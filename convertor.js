@@ -7,28 +7,32 @@ const regExpes = [
     lengthE: 3,
     changeToStart: '<pre>',
     changeToEnd: '</pre>',
+    nestedTag: true,
     fn: (data) => data.split(' ').map(word => '~!~' + word).join(' ')
   },
   {
-    regExp: / \*\*.*\*\*/,
+    regExp: / \*\*.*?\*\*/,
     lengthS: 3,
     lengthE: 2,
     changeToStart: ' <b>',
-    changeToEnd: '</b>'
+    changeToEnd: '</b>',
+    nestedTag: false
   },
   {
-    regExp: / _.*_/,
+    regExp: / _.*?_/,
     lengthS: 2,
     lengthE: 1,
     changeToStart: ' <i>',
-    changeToEnd: '</i>'
+    changeToEnd: '</i>',
+    nestedTag: false
   },
   {
-    regExp: / `.*`/,
+    regExp: / `.*?`/,
     lengthS: 2,
     lengthE: 1,
     changeToStart: ' <tt>',
-    changeToEnd: '</tt>'
+    changeToEnd: '</tt>',
+    nestedTag: false
   }
 ];
 
@@ -42,6 +46,13 @@ const addParagrapgs = (data) => {
   return data;
 };
 
+const isNestedTag = (data) => {
+  for (const regExp of regExpes) {
+    if (data.match(regExp.regExp) != null) return true;
+  }
+  return false;
+}
+
 const deleteInternalSymbols = (data, symbols) => data.split(' ').map(word => word.replace(symbols, '')).join(' ');
 
 const convert = (data) => {
@@ -49,11 +60,15 @@ const convert = (data) => {
   for (const regExp of regExpes) {
     let match;
     while ((match = data.match(regExp.regExp)) != null) {
-      console.log(match);
       const midx = match.index;
       const mlength = match[0].length;
       const preformatedData = data.slice(midx + regExp.lengthS, midx + mlength - regExp.lengthE);
       const formatedData = regExp.fn ? regExp.fn(preformatedData) : preformatedData;
+      if (!regExp.nestedTag && isNestedTag(' ' + formatedData)) {
+        const err = new Error('Error: invalid markdown nested tags');
+        err.code = 406;
+        throw err;
+      }
       data = data.slice(0, midx) + regExp.changeToStart + formatedData + regExp.changeToEnd + data.slice(midx + mlength); 
     }
   }
