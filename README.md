@@ -17,7 +17,7 @@ node index.js
 
 ## Usage
 
-1. You can specify the output file using **--out=** (if you omit it the output will be redirected to stdin)
+1. You can specify the output file using **--out=**
 > **NOTE:** if you omit **--out==** the output will be redirected to stdin
 ```bash
 node index.js --out=example.html
