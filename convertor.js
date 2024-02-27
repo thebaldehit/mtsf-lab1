@@ -3,67 +3,43 @@
 const regExpes = [
   {
     regExp: /```.+?```/s,
-    lengthS: 3,
-    lengthE: 3,
+    length: 3,
+    symbol: '```',
     changeToStart: '<pre>',
     changeToEnd: '</pre>',
     nestedTag: true,
-    fn: (data) => data.split(' ').map(word => '~!~' + word).join(' ')
+    fn: (data) => data.split(' ').map(word => '~a' + word).join(' ')
   },
   {
-    regExp: / \*\*.+?\*\*/,
-    lengthS: 3,
-    lengthE: 2,
-    changeToStart: ' <b>',
-    changeToEnd: '</b>',
-    nestedTag: false
-  },
-  {
-    regExp: /^\*\*.+?\*\*/m,
-    lengthS: 2,
-    lengthE: 2,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)\*\*.+?\*\*([^A-Za-z0-9_\u0400-\u04FF]|$)/u,
+    length: 2,
+    symbol: '**',
     changeToStart: '<b>',
     changeToEnd: '</b>',
     nestedTag: false
   },
   {
-    regExp: / _.+?_/,
-    lengthS: 2,
-    lengthE: 1,
-    changeToStart: ' <i>',
-    changeToEnd: '</i>',
-    nestedTag: false
-  },
-  {
-    regExp: /^_.+?_/m,
-    lengthS: 1,
-    lengthE: 1,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)_.+?_([^A-Za-z0-9_\u0400-\u04FF]|$)/,
+    symbol: '_',
+    length: 1,
     changeToStart: '<i>',
     changeToEnd: '</i>',
     nestedTag: false
   },
   {
-    regExp: / `.+?`/,
-    lengthS: 2,
-    lengthE: 1,
-    changeToStart: ' <tt>',
-    changeToEnd: '</tt>',
-    nestedTag: false
-  },
-  {
-    regExp: /^`.+?`/m,
-    lengthS: 1,
-    lengthE: 1,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)`.+?`([^A-Za-z0-9_\u0400-\u04FF]|$)/,
+    symbol: '`',
+    length: 1,
     changeToStart: '<tt>',
     changeToEnd: '</tt>',
     nestedTag: false
-  }
+  },
 ];
 
 const regExpesError = [
   /(^|\s)\*\*\w+/,
-  /(^|\s)_.+/,
-  /(^|\s)`.+/
+  /(^|\s)_\w+/,
+  /(^|\s)`\w+/
 ];
 
 const addParagrapgs = (data) => {
@@ -96,16 +72,20 @@ const convert = (data) => {
   for (const regExp of regExpes) {
     let match;
     while ((match = data.match(regExp.regExp)) != null) {
-      const midx = match.index;
-      const mlength = match[0].length;
-      const preformatedData = data.slice(midx + regExp.lengthS, midx + mlength - regExp.lengthE);
+      const symbolIndexStart = match[0].indexOf(regExp.symbol);
+      const midx = match.index + symbolIndexStart;
+      let mlength = match[0].length - symbolIndexStart;
+      let preformatedData = data.slice(midx + regExp.length, midx + mlength);
+      const symbolIndexEnd = preformatedData.lastIndexOf(regExp.symbol);
+      const endIdx = midx + symbolIndexEnd
+      preformatedData = preformatedData.slice(0, symbolIndexEnd);
       const formatedData = regExp.fn ? regExp.fn(preformatedData) : preformatedData;
       if (!regExp.nestedTag && isNestedTag(' ' + formatedData)) {
         const err = new Error('Error: invalid markdown nested tags');
         err.code = 406;
         throw err;
       }
-      data = data.slice(0, midx) + regExp.changeToStart + formatedData + regExp.changeToEnd + data.slice(midx + mlength); 
+      data = data.slice(0, midx) + regExp.changeToStart + formatedData + regExp.changeToEnd + data.slice(endIdx + regExp.length * 2); 
     }
   }
   if (isInvalidTags(data)) {
@@ -113,7 +93,7 @@ const convert = (data) => {
     err.code = 406;
     throw err;
   }
-  data = deleteInternalSymbols(data, '~!~');
+  data = deleteInternalSymbols(data, '~a');
   data = addParagrapgs(data);
   return data;
 };
