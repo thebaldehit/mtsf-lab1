@@ -11,7 +11,7 @@ const regExpes = [
     fn: (data) => data.split(' ').map(word => '~a' + word).join(' ')
   },
   {
-    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)\*\*.+?\*\*([^A-Za-z0-9_\u0400-\u04FF]|$)/u,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF*_`]|^)\*\*.+?\*\*([^A-Za-z0-9_\u0400-\u04FF*_`]|$)/u,
     length: 2,
     symbol: '**',
     changeToStart: '<b>',
@@ -19,7 +19,7 @@ const regExpes = [
     nestedTag: false
   },
   {
-    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)_.+?_([^A-Za-z0-9_\u0400-\u04FF]|$)/,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF*_`]|^)_.+?_([^A-Za-z0-9_\u0400-\u04FF*_`]|$)/,
     symbol: '_',
     length: 1,
     changeToStart: '<i>',
@@ -27,7 +27,7 @@ const regExpes = [
     nestedTag: false
   },
   {
-    regExp: /([^A-Za-z0-9_\u0400-\u04FF]|^)`.+?`([^A-Za-z0-9_\u0400-\u04FF]|$)/,
+    regExp: /([^A-Za-z0-9_\u0400-\u04FF*_`]|^)`.+?`([^A-Za-z0-9_\u0400-\u04FF*_`]|$)/,
     symbol: '`',
     length: 1,
     changeToStart: '<tt>',
