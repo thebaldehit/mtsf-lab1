@@ -45,7 +45,7 @@ const regExpesError = [
 const addParagrapgs = (data) => {
   data = '<p>' + data;
   let idx;
-  while ((idx = data.indexOf('\n\n')) != -1) {
+  while ((idx = data.indexOf('\n\n')) != -1 || (idx = data.indexOf('\r\n')) != -1) {
     data = data.slice(0, idx) + '</p><p>' + data.slice(idx + 1);
   }
   data = data + '</p>';
