@@ -8,7 +8,10 @@ const regExpes = [
     changeToStart: '<pre>',
     changeToEnd: '</pre>',
     nestedTag: true,
-    fn: (data) => data.split(' ').map(word => '~a' + word).join(' ')
+    fn: (data) => {
+      preData.push(data);
+      return '~!!!~';
+    }
   },
   {
     regExp: /([^A-Za-z0-9_\u0400-\u04FF*_`]|^)\*\*.+?\*\*([^A-Za-z0-9_\u0400-\u04FF*_`]|$)/u,
@@ -42,6 +45,8 @@ const regExpesError = [
   /(^|\s)`\w+/
 ];
 
+const preData = [];
+
 const addParagrapgs = (data) => {
   data = '<p>' + data;
   let idx;
@@ -66,7 +71,12 @@ const isInvalidTags = (data) => {
   return false;
 };
 
-const deleteInternalSymbols = (data, symbols) => data.split(' ').map(word => word.replace(symbols, '')).join(' ');
+const deleteInternalSymbols = (data, symbols) => {
+  for (const elem of preData) {
+    data = data.replace(symbols, elem);
+  }
+  return data;
+};
 
 const convert = (data) => {
   for (const regExp of regExpes) {
@@ -93,8 +103,8 @@ const convert = (data) => {
     err.code = 406;
     throw err;
   }
-  data = deleteInternalSymbols(data, '~a');
   data = addParagrapgs(data);
+  data = deleteInternalSymbols(data, '~!!!~');
   return data;
 };
 
