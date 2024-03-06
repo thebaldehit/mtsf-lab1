@@ -40,9 +40,10 @@ const regExpes = [
 ];
 
 const regExpesError = [
-  /(^|\s)\*\*\w+/,
-  /(^|\s)_\w+/,
-  /(^|\s)`\w+/
+  /(^|\s)\*\*([\w\u0400-\u04FF])+/,
+  /(^|\s)_([\w\u0400-\u04FF])+/,
+  /(^|\s)`([\w\u0400-\u04FF])+/,
+  /(^|\s)```([\w\u0400-\u04FF])+/
 ];
 
 const preData = [];
